@@ -2,13 +2,13 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -33,22 +33,22 @@ func main() {
 		case <-watcher.Files:
 			args := []string{"test", "./..."}
 			cmd := exec.Command("go", args...)
-			fmt.Println(strings.Join(cmd.Args, " "))
+			color.Yellow(strings.Join(cmd.Args, " "))
 
 			out, err := cmd.CombinedOutput()
 			if err != nil {
 				log.Println(err)
 			}
-			fmt.Print(string(out))
+			color.Cyan(string(out))
 
 			if cmd.ProcessState.Success() {
-				fmt.Println("PASS")
+				color.Green("PASS")
 			} else {
-				fmt.Println("FAIL")
+				color.Red("FAIL")
 			}
-			fmt.Printf(" (%.2f seconds)\n", cmd.ProcessState.UserTime().Seconds())
+			color.Yellow(" (%.2f seconds)\n", cmd.ProcessState.UserTime().Seconds())
 		case folder := <-watcher.Folders:
-			fmt.Println("Watching path:", folder)
+			color.Yellow("Watching path: " + folder)
 		}
 	}
 }
