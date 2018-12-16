@@ -17,47 +17,28 @@ type (
 	// FileWatcher is the struct used to watch files and folders for changes
 	FileWatcher struct {
 		*fsnotify.Watcher
-		Files   chan string
-		Folders chan string
+		Files chan string
 	}
 )
 
 func main() {
 	watcher, err := NewFileWatcher("./")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
-	go watcher.Run()
+	go watcher.run()
 
 	for {
 		select {
 		case <-watcher.Files:
-			args := []string{"test", "./..."}
-			cmd := exec.Command("go", args...)
-			color.Cyan(strings.Join(cmd.Args, " "))
-
-			out, err := cmd.CombinedOutput()
-			if err != nil {
-				log.Println(err)
-			}
-			color.Yellow(string(out))
-
-			var cmdState string
-			if cmd.ProcessState.Success() {
-				cmdState = color.GreenString("PASS")
-			} else {
-				cmdState = color.RedString("FAIL")
-			}
-			fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
-		case folder := <-watcher.Folders:
-			fmt.Println("Watching path: " + folder)
+			goTest()
 		}
 	}
 }
 
 // NewFileWatcher creates and returns a new FileWatcher
 func NewFileWatcher(path string) (*FileWatcher, error) {
-	folders := Subfolders(path)
+	folders := subfolders(path)
 	if len(folders) == 0 {
 		return nil, errors.New("no folders to watch")
 	}
@@ -67,18 +48,16 @@ func NewFileWatcher(path string) (*FileWatcher, error) {
 		return nil, err
 	}
 	watcher := &FileWatcher{Watcher: w}
-
-	watcher.Files = make(chan string, 10)
-	watcher.Folders = make(chan string, len(folders))
+	watcher.Files = make(chan string)
 
 	for _, folder := range folders {
-		watcher.AddFolder(folder)
+		watcher.addFolder(folder)
 	}
 	return watcher, nil
 }
 
-// Run starts a goroutine to watch for changes on the FileWatcher
-func (watcher *FileWatcher) Run() {
+// run starts a goroutine to watch for changes on the FileWatcher
+func (watcher *FileWatcher) run() {
 	for {
 		select {
 		case event := <-watcher.Events:
@@ -89,7 +68,7 @@ func (watcher *FileWatcher) Run() {
 					log.Println("error while processing file create", err)
 				} else if fi.IsDir() {
 					if !shouldIgnoreFile(filepath.Base(event.Name)) {
-						watcher.AddFolder(event.Name)
+						watcher.addFolder(event.Name)
 					}
 				} else {
 					watcher.Files <- event.Name // created a file
@@ -107,17 +86,17 @@ func (watcher *FileWatcher) Run() {
 	}
 }
 
-// AddFolder adds a folder to watch to the FileWatcher
-func (watcher *FileWatcher) AddFolder(folder string) {
+// addFolder adds a folder to watch to the FileWatcher
+func (watcher *FileWatcher) addFolder(folder string) {
 	err := watcher.Add(folder)
 	if err != nil {
 		log.Println("Error watching: ", folder, err)
 	}
-	watcher.Folders <- folder
+	fmt.Println("Watching path: " + folder)
 }
 
-// Subfolders returns a slice of subfolders including the current folder
-func Subfolders(path string) (paths []string) {
+// subfolders returns a slice of subfolders including the current folder
+func subfolders(path string) (paths []string) {
 	filepath.Walk(path, func(newPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -139,4 +118,25 @@ func Subfolders(path string) (paths []string) {
 // shouldIgnoreFile determines if a file should be ignored, file names that begin with "." or "_" are ignored by the go tool.
 func shouldIgnoreFile(name string) bool {
 	return strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || strings.HasPrefix(name, "vendor")
+}
+
+// goTest runs go test ./... and prints output
+func goTest() {
+	args := []string{"test", "./..."}
+	cmd := exec.Command("go", args...)
+	color.Cyan(strings.Join(cmd.Args, " "))
+
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Println(err)
+	}
+	color.Yellow(string(out))
+
+	var cmdState string
+	if cmd.ProcessState.Success() {
+		cmdState = color.GreenString("PASS")
+	} else {
+		cmdState = color.RedString("FAIL")
+	}
+	fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
 }
