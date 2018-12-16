@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -33,22 +34,23 @@ func main() {
 		case <-watcher.Files:
 			args := []string{"test", "./..."}
 			cmd := exec.Command("go", args...)
-			color.Yellow(strings.Join(cmd.Args, " "))
+			color.Cyan(strings.Join(cmd.Args, " "))
 
 			out, err := cmd.CombinedOutput()
 			if err != nil {
 				log.Println(err)
 			}
-			color.Cyan(string(out))
+			color.Yellow(string(out))
 
+			var cmdState string
 			if cmd.ProcessState.Success() {
-				color.Green("PASS")
+				cmdState = color.GreenString("PASS")
 			} else {
-				color.Red("FAIL")
+				cmdState = color.RedString("FAIL")
 			}
-			color.Yellow(" (%.2f seconds)\n", cmd.ProcessState.UserTime().Seconds())
+			fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
 		case folder := <-watcher.Folders:
-			color.Yellow("Watching path: " + folder)
+			fmt.Println("Watching path: " + folder)
 		}
 	}
 }
