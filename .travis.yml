@@ -4,18 +4,16 @@ go:
     - master
 
 stages:
-    - lint
     - test
 
 jobs:
     include:
-        - stage: lint
+        - stage: test
           script:
             - go get -u golang.org/x/lint/golint
             - go install golang.org/x/lint/golint
             - golint ./...
-        - stage: test
-          script:
+        - script:
             - go get github.com/mattn/goveralls
             - go install github.com/mattn/goveralls
             - go test ./... -v -covermode=count -coverprofile coverage.out
