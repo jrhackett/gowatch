@@ -1,9 +1,9 @@
-package gowatch_test
+package main_test
 
 import (
 	"testing"
 
-	"github.com/jrhackett/gowatch"
+	gowatch "github.com/jrhackett/gowatch"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
