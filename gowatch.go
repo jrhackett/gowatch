@@ -1,4 +1,4 @@
-package main
+package gowatch
 
 import (
 	"errors"
