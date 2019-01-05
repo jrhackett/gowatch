@@ -26,13 +26,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	go watcher.run()
 
 	for {
-		select {
-		case <-watcher.Files:
-			goTest()
-		}
+		<-watcher.Files
+		goTest()
 	}
 }
 
@@ -47,12 +46,14 @@ func NewFileWatcher(path string) (*FileWatcher, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	watcher := &FileWatcher{Watcher: w}
 	watcher.Files = make(chan string)
 
 	for _, folder := range folders {
 		watcher.addFolder(folder)
 	}
+
 	return watcher, nil
 }
 
@@ -67,7 +68,7 @@ func (watcher *FileWatcher) run() {
 				if err != nil {
 					log.Println("error while processing file create", err)
 				} else if fi.IsDir() {
-					if !shouldIgnoreFile(filepath.Base(event.Name)) {
+					if !ShouldIgnoreFile(filepath.Base(event.Name)) {
 						watcher.addFolder(event.Name)
 					}
 				} else {
@@ -92,6 +93,7 @@ func (watcher *FileWatcher) addFolder(folder string) {
 	if err != nil {
 		log.Println("Error watching: ", folder, err)
 	}
+
 	fmt.Println("Watching path: " + folder)
 }
 
@@ -105,18 +107,20 @@ func subfolders(path string) (paths []string) {
 		if info.IsDir() {
 			name := info.Name()
 			// skip folders that begin with a dot
-			if shouldIgnoreFile(name) && name != "." && name != ".." {
+			if ShouldIgnoreFile(name) && name != "." && name != ".." {
 				return filepath.SkipDir
 			}
 			paths = append(paths, newPath)
 		}
+
 		return nil
 	})
+
 	return paths
 }
 
-// shouldIgnoreFile determines if a file should be ignored, file names that begin with "." or "_" are ignored by the go tool.
-func shouldIgnoreFile(name string) bool {
+// ShouldIgnoreFile determines if a file should be ignored, file names that begin with "." or "_" are ignored by the go tool.
+func ShouldIgnoreFile(name string) bool {
 	return strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || strings.HasPrefix(name, "vendor")
 }
 

@@ -19,4 +19,22 @@ var _ = Describe("Gowatch", func() {
 			Expect(gowatch.NewFileWatcher("./")).ToNot(BeNil())
 		})
 	})
+
+	Describe("ShouldIgnoreFile", func() {
+		It("should return true if path starts with a period", func() {
+			Expect(gowatch.ShouldIgnoreFile(".something")).To(BeTrue())
+		})
+
+		It("should return true if path starts with an underscore", func() {
+			Expect(gowatch.ShouldIgnoreFile("_something")).To(BeTrue())
+		})
+
+		It("should return true if path starts with vendor", func() {
+			Expect(gowatch.ShouldIgnoreFile("vendorsomething")).To(BeTrue())
+		})
+
+		It("should return false if path is valid file", func() {
+			Expect(gowatch.ShouldIgnoreFile("yay/what/hi")).To(BeFalse())
+		})
+	})
 })
