@@ -7,15 +7,16 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/jrhackett/gowatch/watcher"
 )
 
 func main() {
-	watcher, err := NewFileWatcher("./")
+	watcher, err := watcher.NewFileWatcher("./")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	go watcher.run()
+	go watcher.Run()
 
 	for {
 		<-watcher.Files

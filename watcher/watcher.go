@@ -1,4 +1,4 @@
-package main
+package watcher
 
 import (
 	"errors"
@@ -41,8 +41,8 @@ func NewFileWatcher(path string) (*FileWatcher, error) {
 	return watcher, nil
 }
 
-// run starts a goroutine to watch for changes on the FileWatcher
-func (watcher *FileWatcher) run() {
+// Run watches for changes on the FileWatcher
+func (watcher *FileWatcher) Run() {
 	for {
 		select {
 		case event := <-watcher.Events:
