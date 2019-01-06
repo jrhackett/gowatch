@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -20,20 +18,6 @@ type (
 		Files chan string
 	}
 )
-
-func main() {
-	watcher, err := NewFileWatcher("./")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	go watcher.run()
-
-	for {
-		<-watcher.Files
-		goTest()
-	}
-}
 
 // NewFileWatcher creates and returns a new FileWatcher
 func NewFileWatcher(path string) (*FileWatcher, error) {
@@ -122,25 +106,4 @@ func subfolders(path string) (paths []string) {
 // ShouldIgnoreFile determines if a file should be ignored, file names that begin with "." or "_" are ignored by the go tool.
 func ShouldIgnoreFile(name string) bool {
 	return strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") || strings.HasPrefix(name, "vendor")
-}
-
-// goTest runs go test ./... and prints output
-func goTest() {
-	args := []string{"test", "./..."}
-	cmd := exec.Command("go", args...)
-	color.Cyan(strings.Join(cmd.Args, " "))
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println(err)
-	}
-	color.Yellow(string(out))
-
-	var cmdState string
-	if cmd.ProcessState.Success() {
-		cmdState = color.GreenString("PASS")
-	} else {
-		cmdState = color.RedString("FAIL")
-	}
-	fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
 }
