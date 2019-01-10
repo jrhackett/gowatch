@@ -3,7 +3,7 @@ package watcher_test
 import (
 	"testing"
 
-	"github.com/jrhackett/gowatch/watcher"
+	"github.com/jrhackett/gowatch/internal/watcher"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

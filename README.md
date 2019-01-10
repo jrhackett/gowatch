@@ -7,12 +7,3 @@
 [![Release](https://img.shields.io/github/release/jrhackett/gowatch.svg)](https://github.com/jrhackett/gowatch/releases/latest)
 
 This is a development tool that automatically runs tests when files are changed in a Go project.
-
-## Installation
-
-1. `go get github.com/jrhackett/gowatch`
-2. `go install github.com/jrhackett/gowatch` 
-
-## Usage
-
-While in the top directory of the project or package structure that should be tested, run `gowatch`.
