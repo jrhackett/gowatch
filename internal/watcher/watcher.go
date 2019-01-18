@@ -21,7 +21,11 @@ type (
 
 // NewFileWatcher creates and returns a new FileWatcher
 func NewFileWatcher(path string) (*FileWatcher, error) {
-	folders := subfolders(path)
+	folders, err := subfolders(path)
+	if err != nil {
+		return nil, err
+	}
+
 	if len(folders) == 0 {
 		return nil, errors.New("no folders to watch")
 	}
@@ -82,8 +86,8 @@ func (watcher *FileWatcher) addFolder(folder string) {
 }
 
 // subfolders returns a slice of subfolders including the current folder
-func subfolders(path string) (paths []string) {
-	filepath.Walk(path, func(newPath string, info os.FileInfo, err error) error {
+func subfolders(path string) (paths []string, err error) {
+	err = filepath.Walk(path, func(newPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -100,7 +104,7 @@ func subfolders(path string) (paths []string) {
 		return nil
 	})
 
-	return paths
+	return paths, err
 }
 
 // ShouldIgnoreFile determines if a file should be ignored, file names that begin with "." or "_" are ignored by the go tool.
