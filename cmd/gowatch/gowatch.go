@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"gowatch/internal/watcher"
 	"log"
 	"os/exec"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/jrhackett/gowatch/internal/watcher"
 )
 
 func main() {
