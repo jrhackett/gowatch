@@ -1,17 +1,28 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"gowatch/internal/watcher"
 	"log"
 	"os/exec"
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/jrhackett/gowatch/internal/watcher"
 )
 
 func main() {
-	watcher, err := watcher.NewFileWatcher("./")
+	command := flag.String("command", "", "a command to run when any file inside of path is changed")
+	path := flag.String("path", "./", "a path to watch recursively")
+
+	flag.Parse()
+
+	if *command == "" {
+		color.Red("Missing command")
+		return
+	}
+
+	watcher, err := watcher.NewFileWatcher(*path)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,26 +31,25 @@ func main() {
 
 	for {
 		<-watcher.Files
-		goTest()
-	}
-}
+		commands := strings.Split(*command, " ")
 
-// goTest runs go test ./... and prints output
-func goTest() {
-	cmd := exec.Command("go", []string{"test", "./..."}...)
-	color.Cyan(strings.Join(cmd.Args, " "))
+		if len(commands) >= 1 {
+			cmd := exec.Command(commands[0], commands[1:]...)
+			color.Cyan(strings.Join(cmd.Args, " "))
 
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Println(err)
-	}
-	color.Yellow(string(out))
+			out, err := cmd.CombinedOutput()
+			if err != nil {
+				log.Println(err)
+			}
+			color.Yellow(string(out))
 
-	var cmdState string
-	if cmd.ProcessState.Success() {
-		cmdState = color.GreenString("PASS")
-	} else {
-		cmdState = color.RedString("FAIL")
+			var cmdState string
+			if cmd.ProcessState.Success() {
+				cmdState = color.GreenString("PASS")
+			} else {
+				cmdState = color.RedString("FAIL")
+			}
+			fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
+		}
 	}
-	fmt.Println(cmdState, fmt.Sprintf("(%.2f seconds)", cmd.ProcessState.UserTime().Seconds()))
 }
