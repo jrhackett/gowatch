@@ -1,4 +1,4 @@
-module gowatch
+module github.com/jrhackett/gowatch
 
 require (
 	github.com/fatih/color v1.7.0

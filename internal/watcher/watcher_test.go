@@ -1,9 +1,9 @@
 package watcher_test
 
 import (
-	"gowatch/internal/watcher"
 	"testing"
 
+	"github.com/jrhackett/gowatch/internal/watcher"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
