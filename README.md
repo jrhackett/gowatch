@@ -15,4 +15,6 @@ This is a development tool that automatically runs tests when files are changed 
 
 ## Usage
 
-While in the top directory of the project or package structure that should be tested, run `gowatch`.
+`gowatch -command="go test ./..." -path="./"`
+
+You can supply an arbitrary path and command to watch any directory and run the supplied command when files are changed within that path.
